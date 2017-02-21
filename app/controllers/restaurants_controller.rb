@@ -38,4 +38,5 @@ def update
     redirect_to '/restaurants'
   end
 
+
 end
