@@ -1,4 +1,6 @@
 class RestaurantsController < ApplicationController
+  before_action :authenticate_user!, :except => [:index, :show]
+
   def index
     @restaurants = Restaurant.all
   end
@@ -8,16 +10,18 @@ class RestaurantsController < ApplicationController
   end
 
   def create
-    Restaurant.create(restaurant_params)
-    redirect_to '/restaurants'
+    @restaurant =  Restaurant.new(name: restaurant_params["name"], description: restaurant_params["description"], user_id: current_user.id)
+    if @restaurant.save
+      redirect_to restaurants_path
+    else
+      render 'new'
+    end
   end
 
-  def restaurant_params
-    params.require(:restaurant).permit(:name, :description)
-  end
 
   def show
-  @restaurant = Restaurant.find(params[:id])
+    @restaurant = Restaurant.find(params[:id])
+    @reviews = Review.where(:restaurant_id=>params[:id])
 end
 
 def edit
@@ -36,6 +40,12 @@ def update
     @restaurant.destroy
     flash[:notice] = 'Restaurant deleted successfully'
     redirect_to '/restaurants'
+  end
+
+  private
+
+  def restaurant_params
+    params.require(:restaurant).permit(:name, :description)
   end
 
 
